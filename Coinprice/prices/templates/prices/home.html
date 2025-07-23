@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coin Prices Live Dashboard - Optimized</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: white;
+      margin-bottom: 40px;
+      font-size: 2.5rem;
+      font-weight: 700;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      animation: fadeInDown 0.8s ease-out;
+    }
+
+    .status-bar {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 15px 25px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .connection-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ff4757;
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.connected {
+      background: #2ed573;
+    }
+
+    .last-update {
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .performance-info {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .coins-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .coin {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 25px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    .coin:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    }
+
+    .coin::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+    }
+
+    .coin-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .coin-name {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #2c3e50;
+    }
+
+    .coin-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    .coin-symbol {
+      font-size: 0.9rem;
+      color: #7f8c8d;
+      font-weight: 400;
+    }
+
+    .price-section {
+      margin-bottom: 20px;
+    }
+
+    .price {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #2c3e50;
+      margin-bottom: 8px;
+      font-family: 'Courier New', monospace;
+      transition: all 0.1s ease;
+    }
+
+    .price-change {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .change-positive {
+      color: #27ae60;
+    }
+
+    .change-negative {
+      color: #e74c3c;
+    }
+
+    .loading {
+      color: #3498db;
+      animation: pulse 1.5s infinite;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(0,0,0,0.1);
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: #7f8c8d;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .chart-section {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+
+    .chart-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #2c3e50;
+    }
+
+    .chart-controls {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .coin-selector {
+      padding: 8px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      background: white;
+      color: #2c3e50;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .coin-selector.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border-color: #667eea;
+    }
+
+    .coin-selector:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 400px;
+      position: relative;
+      background: #f8f9fa;
+      border-radius: 15px;
+      overflow: hidden;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .page-button {
+      padding: 8px 15px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      background: white;
+      color: #2c3e50;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .page-button.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border-color: #667eea;
+    }
+
+    .page-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .footer {
+      text-align: center;
+      color: rgba(255,255,255,0.8);
+      margin-top: 40px;
+      font-size: 0.9rem;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .coins-grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .status-bar {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀Coin Real-time </h1>
+
+    <div class="status-bar">
+      <div class="connection-status">
+        <div class="status-dot" id="connectionDot"></div>
+        <span id="connectionText">Đang kết nối...</span>
+      </div>
+      <div class="last-update">
+        Latest update: <span id="lastUpdate">--</span>
+      </div>
+      <div class="performance-info">
+        Latency: <span id="latencyDisplay">-- ms</span>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-header">
+        <div class="chart-title">📈 Biểu Đồ Giá Real-time </div>
+        <div class="chart-controls">
+          <div class="coin-selector active" data-coin="BTCUSDT">BTC</div>
+          <div class="coin-selector" data-coin="ETHUSDT">ETH</div>
+          <div class="coin-selector" data-coin="BNBUSDT">BNB</div>
+          <div class="coin-selector" data-coin="SOLUSDT">SOL</div>
+          <div class="coin-selector" data-coin="DOGEUSDT">DOGE</div>
+          <div class="coin-selector" data-coin="ADAUSDT">ADA</div>
+          <div class="coin-selector" data-coin="XRPUSDT">XRP</div>
+          <div class="coin-selector" data-coin="DOTUSDT">DOT</div>
+          <div class="coin-selector" data-coin="LTCUSDT">LTC</div>
+          <div class="coin-selector" data-coin="LINKUSDT">LINK</div>
+        </div>
+      </div>
+      <div class="chart-container">
+        <canvas id="priceChart"></canvas>
+      </div>
+    </div>
+
+    <div class="pagination" id="pagination"></div>
+
+    <div class="coins-grid" id="prices">
+      <!-- Coins will be populated here -->
+    </div>
+
+    <div class="footer">
+      💎 Creat by Gistra Louis
+
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script>
+    const coinData = {
+      'BTCUSDT': { name: 'Bitcoin', symbol: 'BTC', icon: '₿' },
+      'ETHUSDT': { name: 'Ethereum', symbol: 'ETH', icon: 'Ξ' },
+      'BNBUSDT': { name: 'BNB', symbol: 'BNB', icon: 'BNB' },
+      'SOLUSDT': { name: 'Solana', symbol: 'SOL', icon: 'SOL' },
+      'DOGEUSDT': { name: 'Dogecoin', symbol: 'DOGE', icon: 'Ð' },
+      'ADAUSDT': { name: 'Cardano', symbol: 'ADA', icon: 'ADA' },
+      'XRPUSDT': { name: 'XRP', symbol: 'XRP', icon: 'XRP' },
+      'DOTUSDT': { name: 'Polkadot', symbol: 'DOT', icon: 'DOT' },
+      'LTCUSDT': { name: 'Litecoin', symbol: 'LTC', icon: 'LTC' },
+      'LINKUSDT': { name: 'Chainlink', symbol: 'LINK', icon: 'LINK' },
+      'XLMUSDT': { name: 'Stellar', symbol: 'XLM', icon: 'XLM' },
+      'BCHUSDT': { name: 'Bitcoin Cash', symbol: 'BCH', icon: 'BCH' },
+      'ALGOUSDT': { name: 'Algorand', symbol: 'ALGO', icon: 'ALGO' },
+      'VETUSDT': { name: 'VeChain', symbol: 'VET', icon: 'VET' },
+      'ICPUSDT': { name: 'Internet Computer', symbol: 'ICP', icon: 'ICP' },
+      'MATICUSDT': { name: 'Polygon', symbol: 'MATIC', icon: 'MATIC' },
+      'FILUSDT': { name: 'Filecoin', symbol: 'FIL', icon: 'FIL' },
+      'TRXUSDT': { name: 'TRON', symbol: 'TRX', icon: 'TRX' },
+      'ETCUSDT': { name: 'Ethereum Classic', symbol: 'ETC', icon: 'ETC' },
+      'ATOMUSDT': { name: 'Cosmos', symbol: 'ATOM', icon: 'ATOM' },
+      'AVAXUSDT': { name: 'Avalanche', symbol: 'AVAX', icon: 'AVAX' },
+      'XMRUSDT': { name: 'Monero', symbol: 'XMR', icon: 'XMR' },
+      'EOSUSDT': { name: 'EOS', symbol: 'EOS', icon: 'EOS' },
+      'NEOUSDT': { name: 'NEO', symbol: 'NEO', icon: 'NEO' },
+      'XTZUSDT': { name: 'Tezos', symbol: 'XTZ', icon: 'XTZ' },
+      'AAVEUSDT': { name: 'Aave', symbol: 'AAVE', icon: 'AAVE' },
+      'MKRUSDT': { name: 'Maker', symbol: 'MKR', icon: 'MKR' },
+      'COMPUSDT': { name: 'Compound', symbol: 'COMP', icon: 'COMP' },
+      'UNIUSDT': { name: 'Uniswap', symbol: 'UNI', icon: 'UNI' },
+      'YFIUSDT': { name: 'yearn.finance', symbol: 'YFI', icon: 'YFI' },
+      'SHIBUSDT': { name: 'Shiba Inu', symbol: 'SHIB', icon: 'SHIB' },
+      'INJUSDT': { name: 'Injective', symbol: 'INJ', icon: 'INJ' },
+      'RUNEUSDT': { name: 'THORChain', symbol: 'RUNE', icon: 'RUNE' },
+      'GRTUSDT': { name: 'The Graph', symbol: 'GRT', icon: 'GRT' },
+      'CRVUSDT': { name: 'Curve DAO', symbol: 'CRV', icon: 'CRV' },
+      'SANDUSDT': { name: 'The Sandbox', symbol: 'SAND', icon: 'SAND' },
+      'MANAUSDT': { name: 'Decentraland', symbol: 'MANA', icon: 'MANA' },
+      'ENJUSDT': { name: 'Enjin Coin', symbol: 'ENJ', icon: 'ENJ' },
+      'AXSUSDT': { name: 'Axie Infinity', symbol: 'AXS', icon: 'AXS' },
+      'CHZUSDT': { name: 'Chiliz', symbol: 'CHZ', icon: 'CHZ' },
+      'FLOWUSDT': { name: 'Flow', symbol: 'FLOW', icon: 'FLOW' },
+      'FTMUSDT': { name: 'Fantom', symbol: 'FTM', icon: 'FTM' },
+      'GALAUSDT': { name: 'Gala', symbol: 'GALA', icon: 'GALA' },
+      'APEUSDT': { name: 'ApeCoin', symbol: 'APE', icon: 'APE' },
+      'THETAUSDT': { name: 'Theta Network', symbol: 'THETA', icon: 'THETA' },
+      'ZILUSDT': { name: 'Zilliqa', symbol: 'ZIL', icon: 'ZIL' },
+      'HBARUSDT': { name: 'Hedera', symbol: 'HBAR', icon: 'HBAR' },
+      'ARPAUSDT': { name: 'ARPA', symbol: 'ARPA', icon: 'ARPA' },
+      'KAVAUSDT': { name: 'Kava', symbol: 'KAVA', icon: 'KAVA' },
+      'ONEUSDT': { name: 'Harmony', symbol: 'ONE', icon: 'ONE' },
+      'ROSEUSDT': { name: 'Oasis Network', symbol: 'ROSE', icon: 'ROSE' },
+      'ANKRUSDT': { name: 'Ankr', symbol: 'ANKR', icon: 'ANKR' },
+      'SXPUSDT': { name: 'SXP', symbol: 'SXP', icon: 'SXP' },
+      'LRCUSDT': { name: 'Loopring', symbol: 'LRC', icon: 'LRC' },
+      'ZECUSDT': { name: 'Zcash', symbol: 'ZEC', icon: 'ZEC' },
+      'DASHUSDT': { name: 'Dash', symbol: 'DASH', icon: 'DASH' }
+    };
+
+    const coins = Object.keys(coinData);
+    const pricesDiv = document.getElementById('prices');
+    const connectionDot = document.getElementById('connectionDot');
+    const connectionText = document.getElementById('connectionText');
+    const lastUpdate = document.getElementById('lastUpdate');
+    const latencyDisplay = document.getElementById('latencyDisplay');
+    const paginationDiv = document.getElementById('pagination');
+
+    let previousPrices = {};
+    let animationDelay = 0;
+    let selectedCoin = 'BTCUSDT';
+    let priceHistory = {};
+    let chart = null;
+    let updateQueue = [];
+    let lastTimestamp = Date.now();
+    const maxDataPoints = 100;
+    const updateThrottleMs = 100;
+    const coinsPerPage = 10;
+    let currentPage = 1;
+
+    // Performance monitoring
+    let messageCount = 0;
+    let lastMessageTime = Date.now();
+
+    // Initialize price history for all coins
+    coins.forEach(coin => {
+      priceHistory[coin] = {
+        labels: [],
+        data: [],
+        timestamps: []
+      };
+    });
+
+    // Initialize coin cards with pagination
+    function renderCoinCards(page) {
+      pricesDiv.innerHTML = '';
+      const start = (page - 1) * coinsPerPage;
+      const end = start + coinsPerPage;
+      const pageCoins = coins.slice(start, end);
+      animationDelay = 0;
+
+      pageCoins.forEach(symbol => {
+        const coin = coinData[symbol];
+        const div = document.createElement('div');
+        div.id = symbol;
+        div.className = 'coin';
+        div.style.animationDelay = `${animationDelay}s`;
+        animationDelay += 0.1;
+
+        div.innerHTML = `
+          <div class="coin-header">
+            <div class="coin-name">
+              <div class="coin-icon">${coin.icon}</div>
+              <div>
+                <div>${coin.name}</div>
+                <div class="coin-symbol">${coin.symbol}/USDT</div>
+              </div>
+            </div>
+          </div>
+          <div class="price-section">
+            <div class="price loading">Đang tải...</div>
+            <div class="price-change" id="${symbol}-change" style="display: none;">
+              <span id="${symbol}-change-text">--</span>
+            </div>
+          </div>
+          <div class="stats-row">
+            <div class="stat">
+              <div class="stat-label">24h High</div>
+              <div class="stat-value" id="${symbol}-high">--</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">24h Low</div>
+              <div class="stat-value" id="${symbol}-low">--</div>
+            </div>
+            <div class="stat">
+              <div class="stat-label">Volume</div>
+              <div class="stat-value" id="${symbol}-volume">--</div>
+            </div>
+          </div>
+        `;
+
+        pricesDiv.appendChild(div);
+      });
+
+      // Render pagination buttons
+      const totalPages = Math.ceil(coins.length / coinsPerPage);
+      paginationDiv.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const button = document.createElement('button');
+        button.className = `page-button ${i === page ? 'active' : ''}`;
+        button.textContent = i;
+        button.addEventListener('click', () => {
+          currentPage = i;
+          renderCoinCards(currentPage);
+          updatePaginationButtons();
+        });
+        paginationDiv.appendChild(button);
+      }
+    }
+
+    function updatePaginationButtons() {
+      const buttons = document.querySelectorAll('.page-button');
+      buttons.forEach((button, index) => {
+        button.classList.toggle('active', index + 1 === currentPage);
+      });
+    }
+
+    // Initialize coin cards for first page
+    renderCoinCards(currentPage);
+
+    // Optimized Chart initialization
+    function initChart() {
+      const ctx = document.getElementById('priceChart').getContext('2d');
+
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: `${coinData[selectedCoin].name} Price (USDT)`,
+            data: [],
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.1,
+            pointBackgroundColor: '#667eea',
+            pointBorderColor: '#ffffff',
+            pointBorderWidth: 1,
+            pointRadius: 2,
+            pointHoverRadius: 4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: {
+            duration: 0
+          },
+          interaction: {
+            intersect: false,
+            mode: 'index'
+          },
+          scales: {
+            x: {
+              display: true,
+              title: {
+                display: true,
+                text: 'Thời Gian',
+                font: { weight: 'bold' }
+              },
+              grid: {
+                color: 'rgba(0,0,0,0.1)'
+              },
+              ticks: {
+                maxTicksLimit: 10
+              }
+            },
+            y: {
+              display: true,
+              title: {
+                display: true,
+                text: 'Giá (USDT)',
+                font: { weight: 'bold' }
+              },
+              grid: {
+                color: 'rgba(0,0,0,0.1)'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: true,
+              position: 'top',
+              labels: {
+                font: { weight: 'bold' },
+                usePointStyle: true
+              }
+            },
+            tooltip: {
+              enabled: true,
+              mode: 'index',
+              intersect: false,
+              backgroundColor: 'rgba(0,0,0,0.8)',
+              titleColor: 'white',
+              bodyColor: 'white',
+              cornerRadius: 10,
+              displayColors: false
+            }
+          }
+        }
+      });
+    }
+
+    // Optimized batch update function
+    function batchUpdateChart() {
+      if (updateQueue.length === 0) return;
+
+      const now = Date.now();
+      if (now - lastTimestamp < updateThrottleMs) {
+        requestAnimationFrame(batchUpdateChart);
+        return;
+      }
+
+      while (updateQueue.length > 0) {
+        const update = updateQueue.shift();
+        const { symbol, price, timestamp } = update;
+
+        if (!priceHistory[symbol]) continue;
+
+        const timeLabel = new Date(timestamp).toLocaleTimeString('vi-VN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit'
+        });
+
+        priceHistory[symbol].labels.push(timeLabel);
+        priceHistory[symbol].data.push(parseFloat(price));
+        priceHistory[symbol].timestamps.push(timestamp);
+
+        if (priceHistory[symbol].labels.length > maxDataPoints) {
+          priceHistory[symbol].labels.shift();
+          priceHistory[symbol].data.shift();
+          priceHistory[symbol].timestamps.shift();
+        }
+      }
+
+      if (chart && priceHistory[selectedCoin]) {
+        chart.data.labels = priceHistory[selectedCoin].labels;
+        chart.data.datasets[0].data = priceHistory[selectedCoin].data;
+        chart.data.datasets[0].label = `${coinData[selectedCoin].name} Price (USDT)`;
+        chart.update('none');
+      }
+
+      lastTimestamp = now;
+    }
+
+    // Add update to queue
+    function queueChartUpdate(symbol, price, timestamp) {
+      updateQueue.push({ symbol, price, timestamp });
+
+      if (updateQueue.length === 1) {
+        requestAnimationFrame(batchUpdateChart);
+      }
+    }
+
+    // Switch chart to different coin
+    function switchChart(symbol) {
+      if (!chart || !priceHistory[symbol]) return;
+
+      selectedCoin = symbol;
+      chart.data.labels = priceHistory[symbol].labels;
+      chart.data.datasets[0].data = priceHistory[symbol].data;
+      chart.data.datasets[0].label = `${coinData[symbol].name} Price (USDT)`;
+      chart.update();
+
+      document.querySelectorAll('.coin-selector').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.querySelector(`[data-coin="${symbol}"]`).classList.add('active');
+    }
+
+    // Add click event to coin selector buttons
+    document.querySelectorAll('.coin-selector').forEach(button => {
+      button.addEventListener('click', () => {
+        const coinSymbol = button.getAttribute('data-coin');
+        switchChart(coinSymbol);
+      });
+    });
+
+    // Initialize chart after DOM is loaded
+    initChart();
+
+    function updateConnectionStatus(connected) {
+      if (connected) {
+        connectionDot.classList.add('connected');
+        connectionText.textContent = 'Kết nối thành công';
+      } else {
+        connectionDot.classList.remove('connected');
+        connectionText.textContent = 'Mất kết nối';
+      }
+    }
+
+    function formatPrice(price) {
+      const num = parseFloat(price);
+      if (isNaN(num)) return 'N/A';
+      if (num >= 1000) {
+        return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      } else if (num >= 1) {
+        return num.toFixed(4);
+      } else {
+        return num.toFixed(6);
+      }
+    }
+
+    function formatVolume(volume) {
+      const num = parseFloat(volume);
+      if (isNaN(num)) return 'N/A';
+      if (num >= 1e9) {
+        return (num / 1e9).toFixed(1) + 'B';
+      } else if (num >= 1e6) {
+        return (num / 1e6).toFixed(1) + 'M';
+      } else if (num >= 1e3) {
+        return (num / 1e3).toFixed(1) + 'K';
+      }
+      return num.toFixed(0);
+    }
+
+    function updatePriceChange(symbol, newPrice) {
+      const changeElement = document.getElementById(`${symbol}-change`);
+      const changeTextElement = document.getElementById(`${symbol}-change-text`);
+
+      if (changeElement && previousPrices[symbol]) {
+        const oldPrice = parseFloat(previousPrices[symbol]);
+        const currentPrice = parseFloat(newPrice);
+        const change = ((currentPrice - oldPrice) / oldPrice * 100);
+
+        if (change > 0) {
+          changeElement.className = 'price-change change-positive';
+          changeTextElement.textContent = `↗ +${change.toFixed(2)}%`;
+        } else if (change < 0) {
+          changeElement.className = 'price-change change-negative';
+          changeTextElement.textContent = `↘ ${change.toFixed(2)}%`;
+        } else {
+          changeElement.className = 'price-change';
+          changeTextElement.textContent = '→ 0.00%';
+        }
+
+        changeElement.style.display = 'flex';
+      }
+
+      previousPrices[symbol] = newPrice;
+    }
+
+    function updatePrice(symbol, data, timestamp) {
+      const priceElement = document.querySelector(`#${symbol} .price`);
+      const highElement = document.querySelector(`#${symbol}-high`);
+      const lowElement = document.querySelector(`#${symbol}-low`);
+      const volumeElement = document.querySelector(`#${symbol}-volume`);
+
+      if (priceElement && data.price && data.price !== 'N/A') {
+        const formattedPrice = formatPrice(data.price);
+        priceElement.textContent = `${formattedPrice}`;
+        priceElement.classList.remove('loading');
+
+        if (highElement && data.high && data.high !== 'N/A') {
+          highElement.textContent = formatPrice(data.high);
+        }
+        if (lowElement && data.low && data.low !== 'N/A') {
+          lowElement.textContent = formatPrice(data.low);
+        }
+        if (volumeElement && data.volume && data.volume !== 'N/A') {
+          volumeElement.textContent = formatVolume(data.volume);
+        }
+
+        updatePriceChange(symbol, data.price);
+        queueChartUpdate(symbol, data.price, timestamp);
+      }
+    }
+
+    function updateLastUpdate() {
+      const now = new Date();
+      lastUpdate.textContent = now.toLocaleTimeString('vi-VN');
+    }
+
+    function updateLatency() {
+      const now = Date.now();
+      const latency = now - lastMessageTime;
+      latencyDisplay.textContent = `${latency} ms`;
+      lastMessageTime = now;
+    }
+
+    // WebSocket connection - Optimized version
+    try {
+      const socket = new WebSocket(`ws://${window.location.host}/ws/price/`);
+
+      socket.onopen = () => {
+        updateConnectionStatus(true);
+        console.log('WebSocket connected - Optimized version');
+      };
+
+      socket.onclose = () => {
+        updateConnectionStatus(false);
+        console.log('WebSocket disconnected');
+      };
+
+      socket.onerror = (error) => {
+        updateConnectionStatus(false);
+        console.error('WebSocket error:', error);
+      };
+
+      socket.onmessage = (event) => {
+        const timestamp = Date.now();
+        messageCount++;
+        updateLatency();
+
+        try {
+          const data = JSON.parse(event.data);
+
+          // Optimized price updates
+          for (const symbol of coins) {
+            const coinData = data[symbol];
+            if (coinData && coinData.price !== 'N/A') {
+              updatePrice(symbol, coinData, timestamp);
+            }
+          }
+
+          updateLastUpdate();
+        } catch (error) {
+          console.error('Error parsing WebSocket data:', error);
+
+          // Fallback to simple update
+          try {
+            const data = JSON.parse(event.data);
+            for (const symbol of coins) {
+              const coinData = data[symbol];
+              if (coinData && coinData.price !== 'N/A') {
+                const priceElement = document.querySelector(`#${symbol} .price`);
+                const highElement = document.querySelector(`#${symbol}-high`);
+                const lowElement = document.querySelector(`#${symbol}-low`);
+                const volumeElement = document.querySelector(`#${symbol}-volume`);
+                if (priceElement) {
+                  priceElement.textContent = formatPrice(coinData.price);
+                  priceElement.classList.remove('loading');
+                }
+                if (highElement && coinData.high) {
+                  highElement.textContent = formatPrice(coinData.high);
+                }
+                if (lowElement && coinData.low) {
+                  lowElement.textContent = formatPrice(coinData.low);
+                }
+                if (volumeElement && coinData.volume) {
+                  volumeElement.textContent = formatVolume(coinData.volume);
+                }
+              }
+            }
+          } catch (fallbackError) {
+            console.error('Fallback parsing also failed:', fallbackError);
+          }
+        }
+      };
+    } catch (error) {
+      updateConnectionStatus(false);
+      console.error('Failed to create WebSocket connection:', error);
+    }
+
+    // Performance monitoring
+    setInterval(() => {
+      console.log(`Messages reçus: ${messageCount}, Queue size: ${updateQueue.length}`);
+      messageCount = 0;
+    }, 5000);
+  </script>
+</body>
+</html>
