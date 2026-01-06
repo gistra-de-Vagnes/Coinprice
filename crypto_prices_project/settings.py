@@ -53,7 +53,7 @@ INSTALLED_APPS = [
     'prices',
 ]
 
-ASGI_APPLICATION = 'Coinprice.asgi.application'
+ASGI_APPLICATION = 'crypto_prices_project.asgi.application'
 
 CHANNEL_LAYERS = {
     "default": {
@@ -72,7 +72,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'Coinprice.urls'
+ROOT_URLCONF = 'crypto_prices_project.urls'
 
 TEMPLATES = [
     {
@@ -89,7 +89,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Coinprice.wsgi.application'
+WSGI_APPLICATION = 'crypto_prices_project.wsgi.application'
 
 
 # Database
