@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-#c^-ya1*qp$&d8!z#z8#sf2f51kk0%+gf2zv9qg(^wrqkp(h6&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1']
 
 
 # Application definition
@@ -44,12 +44,9 @@ INSTALLED_APPS = [
 ASGI_APPLICATION = 'Coinprice.asgi.application'
 
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
-        },
-    },
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
 }
 
 MIDDLEWARE = [
