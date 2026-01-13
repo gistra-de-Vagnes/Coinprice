@@ -371,18 +371,8 @@
     <div class="chart-section">
       <div class="chart-header">
         <div class="chart-title">📈 Biểu Đồ Giá Real-time </div>
-        <div class="chart-controls">
-          <div class="coin-selector active" data-coin="BTCUSDT">BTC</div>
-          <div class="coin-selector" data-coin="ETHUSDT">ETH</div>
-          <div class="coin-selector" data-coin="BNBUSDT">BNB</div>
-          <div class="coin-selector" data-coin="SOLUSDT">SOL</div>
-          <div class="coin-selector" data-coin="DOGEUSDT">DOGE</div>
-          <div class="coin-selector" data-coin="ADAUSDT">ADA</div>
-          <div class="coin-selector" data-coin="XRPUSDT">XRP</div>
-          <div class="coin-selector" data-coin="DOTUSDT">DOT</div>
-          <div class="coin-selector" data-coin="LTCUSDT">LTC</div>
-          <div class="coin-selector" data-coin="LINKUSDT">LINK</div>
-        </div>
+        <div class="chart-controls" id="chartControls">
+          </div>
       </div>
       <div class="chart-container">
         <canvas id="priceChart"></canvas>
@@ -403,65 +393,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
   <script>
-    const coinData = {
-      'BTCUSDT': { name: 'Bitcoin', symbol: 'BTC', icon: '₿' },
-      'ETHUSDT': { name: 'Ethereum', symbol: 'ETH', icon: 'Ξ' },
-      'BNBUSDT': { name: 'BNB', symbol: 'BNB', icon: 'BNB' },
-      'SOLUSDT': { name: 'Solana', symbol: 'SOL', icon: 'SOL' },
-      'DOGEUSDT': { name: 'Dogecoin', symbol: 'DOGE', icon: 'Ð' },
-      'ADAUSDT': { name: 'Cardano', symbol: 'ADA', icon: 'ADA' },
-      'XRPUSDT': { name: 'XRP', symbol: 'XRP', icon: 'XRP' },
-      'DOTUSDT': { name: 'Polkadot', symbol: 'DOT', icon: 'DOT' },
-      'LTCUSDT': { name: 'Litecoin', symbol: 'LTC', icon: 'LTC' },
-      'LINKUSDT': { name: 'Chainlink', symbol: 'LINK', icon: 'LINK' },
-      'XLMUSDT': { name: 'Stellar', symbol: 'XLM', icon: 'XLM' },
-      'BCHUSDT': { name: 'Bitcoin Cash', symbol: 'BCH', icon: 'BCH' },
-      'ALGOUSDT': { name: 'Algorand', symbol: 'ALGO', icon: 'ALGO' },
-      'VETUSDT': { name: 'VeChain', symbol: 'VET', icon: 'VET' },
-      'ICPUSDT': { name: 'Internet Computer', symbol: 'ICP', icon: 'ICP' },
-      'MATICUSDT': { name: 'Polygon', symbol: 'MATIC', icon: 'MATIC' },
-      'FILUSDT': { name: 'Filecoin', symbol: 'FIL', icon: 'FIL' },
-      'TRXUSDT': { name: 'TRON', symbol: 'TRX', icon: 'TRX' },
-      'ETCUSDT': { name: 'Ethereum Classic', symbol: 'ETC', icon: 'ETC' },
-      'ATOMUSDT': { name: 'Cosmos', symbol: 'ATOM', icon: 'ATOM' },
-      'AVAXUSDT': { name: 'Avalanche', symbol: 'AVAX', icon: 'AVAX' },
-      'XMRUSDT': { name: 'Monero', symbol: 'XMR', icon: 'XMR' },
-      'EOSUSDT': { name: 'EOS', symbol: 'EOS', icon: 'EOS' },
-      'NEOUSDT': { name: 'NEO', symbol: 'NEO', icon: 'NEO' },
-      'XTZUSDT': { name: 'Tezos', symbol: 'XTZ', icon: 'XTZ' },
-      'AAVEUSDT': { name: 'Aave', symbol: 'AAVE', icon: 'AAVE' },
-      'MKRUSDT': { name: 'Maker', symbol: 'MKR', icon: 'MKR' },
-      'COMPUSDT': { name: 'Compound', symbol: 'COMP', icon: 'COMP' },
-      'UNIUSDT': { name: 'Uniswap', symbol: 'UNI', icon: 'UNI' },
-      'YFIUSDT': { name: 'yearn.finance', symbol: 'YFI', icon: 'YFI' },
-      'SHIBUSDT': { name: 'Shiba Inu', symbol: 'SHIB', icon: 'SHIB' },
-      'INJUSDT': { name: 'Injective', symbol: 'INJ', icon: 'INJ' },
-      'RUNEUSDT': { name: 'THORChain', symbol: 'RUNE', icon: 'RUNE' },
-      'GRTUSDT': { name: 'The Graph', symbol: 'GRT', icon: 'GRT' },
-      'CRVUSDT': { name: 'Curve DAO', symbol: 'CRV', icon: 'CRV' },
-      'SANDUSDT': { name: 'The Sandbox', symbol: 'SAND', icon: 'SAND' },
-      'MANAUSDT': { name: 'Decentraland', symbol: 'MANA', icon: 'MANA' },
-      'ENJUSDT': { name: 'Enjin Coin', symbol: 'ENJ', icon: 'ENJ' },
-      'AXSUSDT': { name: 'Axie Infinity', symbol: 'AXS', icon: 'AXS' },
-      'CHZUSDT': { name: 'Chiliz', symbol: 'CHZ', icon: 'CHZ' },
-      'FLOWUSDT': { name: 'Flow', symbol: 'FLOW', icon: 'FLOW' },
-      'FTMUSDT': { name: 'Fantom', symbol: 'FTM', icon: 'FTM' },
-      'GALAUSDT': { name: 'Gala', symbol: 'GALA', icon: 'GALA' },
-      'APEUSDT': { name: 'ApeCoin', symbol: 'APE', icon: 'APE' },
-      'THETAUSDT': { name: 'Theta Network', symbol: 'THETA', icon: 'THETA' },
-      'ZILUSDT': { name: 'Zilliqa', symbol: 'ZIL', icon: 'ZIL' },
-      'HBARUSDT': { name: 'Hedera', symbol: 'HBAR', icon: 'HBAR' },
-      'ARPAUSDT': { name: 'ARPA', symbol: 'ARPA', icon: 'ARPA' },
-      'KAVAUSDT': { name: 'Kava', symbol: 'KAVA', icon: 'KAVA' },
-      'ONEUSDT': { name: 'Harmony', symbol: 'ONE', icon: 'ONE' },
-      'ROSEUSDT': { name: 'Oasis Network', symbol: 'ROSE', icon: 'ROSE' },
-      'ANKRUSDT': { name: 'Ankr', symbol: 'ANKR', icon: 'ANKR' },
-      'SXPUSDT': { name: 'SXP', symbol: 'SXP', icon: 'SXP' },
-      'LRCUSDT': { name: 'Loopring', symbol: 'LRC', icon: 'LRC' },
-      'ZECUSDT': { name: 'Zcash', symbol: 'ZEC', icon: 'ZEC' },
-      'DASHUSDT': { name: 'Dash', symbol: 'DASH', icon: 'DASH' }
-    };
-
+    const coinData = JSON.parse('{{ coins_json|escapejs }}');
     const coins = Object.keys(coinData);
     const pricesDiv = document.getElementById('prices');
     const connectionDot = document.getElementById('connectionDot');
@@ -724,6 +656,16 @@
       document.querySelector(`[data-coin="${symbol}"]`).classList.add('active');
     }
 
+    // Generate chart controls dynamically
+    const chartControls = document.getElementById('chartControls');
+    coins.slice(0, 10).forEach((coin, index) => {
+      const button = document.createElement('div');
+      button.className = `coin-selector ${index === 0 ? 'active' : ''}`;
+      button.setAttribute('data-coin', coin);
+      button.textContent = coinData[coin].symbol;
+      chartControls.appendChild(button);
+    });
+
     // Add click event to coin selector buttons
     document.querySelectorAll('.coin-selector').forEach(button => {
       button.addEventListener('click', () => {
@@ -836,7 +778,8 @@
 
     // WebSocket connection - Optimized version
     try {
-      const socket = new WebSocket(`ws://${window.location.host}/ws/price/`);
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const socket = new WebSocket(`${protocol}//${window.location.host}/ws/price/`);
 
       socket.onopen = () => {
         updateConnectionStatus(true);
@@ -859,48 +802,17 @@
         updateLatency();
 
         try {
-          const data = JSON.parse(event.data);
+          const message = JSON.parse(event.data);
+          const symbol = message.symbol;
+          const coinData = message.data;
 
-          // Optimized price updates
-          for (const symbol of coins) {
-            const coinData = data[symbol];
-            if (coinData && coinData.price !== 'N/A') {
-              updatePrice(symbol, coinData, timestamp);
-            }
+          if (symbol && coinData && coins.includes(symbol)) {
+            updatePrice(symbol, coinData, timestamp);
           }
 
           updateLastUpdate();
         } catch (error) {
           console.error('Error parsing WebSocket data:', error);
-
-          // Fallback to simple update
-          try {
-            const data = JSON.parse(event.data);
-            for (const symbol of coins) {
-              const coinData = data[symbol];
-              if (coinData && coinData.price !== 'N/A') {
-                const priceElement = document.querySelector(`#${symbol} .price`);
-                const highElement = document.querySelector(`#${symbol}-high`);
-                const lowElement = document.querySelector(`#${symbol}-low`);
-                const volumeElement = document.querySelector(`#${symbol}-volume`);
-                if (priceElement) {
-                  priceElement.textContent = formatPrice(coinData.price);
-                  priceElement.classList.remove('loading');
-                }
-                if (highElement && coinData.high) {
-                  highElement.textContent = formatPrice(coinData.high);
-                }
-                if (lowElement && coinData.low) {
-                  lowElement.textContent = formatPrice(coinData.low);
-                }
-                if (volumeElement && coinData.volume) {
-                  volumeElement.textContent = formatVolume(coinData.volume);
-                }
-              }
-            }
-          } catch (fallbackError) {
-            console.error('Fallback parsing also failed:', fallbackError);
-          }
         }
       };
     } catch (error) {
